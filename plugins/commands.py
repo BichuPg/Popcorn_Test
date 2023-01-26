@@ -524,3 +524,30 @@ async def save_template(client, message):
     template = message.text.split(" ", 1)[1]
     await save_group_settings(grp_id, 'template', template)
     await sts.edit(f"𝚂𝚄𝙲𝙲𝙴𝚂𝚂𝙵𝚄𝙻𝙻𝚈 𝚄𝙿𝙶𝚁𝙰𝙳𝙴𝙳 𝚈𝙾𝚄𝚁 𝚃𝙴𝙼𝙿𝙻𝙰𝚃𝙴 𝙵𝙾𝚁 {title} to\n\n{template}")
+
+@Client.on_message(filters.command("shortlink") & filters.user(ADMINS))
+async def shortlink(bot, message):
+    chat_type = message.chat.type
+    if chat_type == enums.ChatType.PRIVATE:
+        return await message.reply_text(f"<b>Hey {message.from_user.mention}, This command only works on groups !</b>")
+    elif chat_type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
+        grpid = message.chat.id
+        title = message.chat.title
+    else:
+        return
+    data = message.text
+    userid = message.from_user.id
+    user = await bot.get_chat_member(grpid, userid)
+    if user.status != enums.ChatMemberStatus.ADMINISTRATOR and user.status != enums.ChatMemberStatus.OWNER and str(userid) not in ADMINS:
+        return await message.reply_text("<b>You don't have access to use this command ! To Get Access Contact @PirateGamers </b>")
+    else:
+        pass
+    try:
+        command, shortlink_url, api = data.split(" ")
+    except:
+        return await message.reply_text("<b>Command Incomplete :(\n\nGive me a shortlink and api along with the command !\n\nFormat: <code>/shortlink omegalinks.in 9c53d31922826c891f8d5d730ef5c495c2bcf36e</code></b>")
+    reply = await message.reply_text("<b>Please Wait...</b>")
+    await save_group_settings(grpid, 'shortlink', shortlink_url)
+    await save_group_settings(grpid, 'shortlink_api', api)
+    await save_group_settings(grpid, 'is_shortlink', True)
+    await reply.edit_text(f"<b>⚡ Successfully Added Shortlink API For {title}.\n\n🔗 Current Shortlink Website: <code>{shortlink_url}</code>\n📣 Current API: <code>{api}</code></b>")
